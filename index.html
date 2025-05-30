@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bintang Curhat</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #f9f9fb;
+      --text-color: #111;
+      --box-color: #fff;
+      --primary-color: #6a0dad;
+      --shadow-color: rgba(0, 0, 0, 0.08);
+      --input-border: #ddd;
+    }
+
+    body.dark {
+      --bg-color: #121212;
+      --text-color: #f5f5f5;
+      --box-color: #1e1e1e;
+      --primary-color: #bb86fc;
+      --shadow-color: rgba(255, 255, 255, 0.05);
+      --input-border: #444;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+      transition: all 0.3s ease;
+    }
+
+    header {
+      background: var(--primary-color);
+      color: white;
+      text-align: center;
+      padding: 30px 15px;
+      border-radius: 0 0 20px 20px;
+      position: relative;
+    }
+
+    .toggle-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: white;
+      color: var(--primary-color);
+      border: none;
+      padding: 8px 12px;
+      font-size: 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 30px auto;
+      padding: 0 15px;
+    }
+
+    form {
+      background: var(--box-color);
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px var(--shadow-color);
+      margin-bottom: 30px;
+    }
+
+    textarea, select, button {
+      width: 100%;
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--input-border);
+      font-size: 14px;
+      background: var(--bg-color);
+      color: var(--text-color);
+      transition: 0.2s;
+    }
+
+    button {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      font-weight: bold;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .curhat {
+      background: var(--box-color);
+      padding: 15px;
+      border-left: 5px solid var(--primary-color);
+      border-radius: 12px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 6px var(--shadow-color);
+    }
+
+    .kategori {
+      font-size: 13px;
+      color: #999;
+      margin-bottom: 5px;
+    }
+
+    @media (max-width: 600px) {
+      .toggle-btn {
+        font-size: 12px;
+        padding: 6px 10px;
+      }
+
+      form, .curhat {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Bintang Curhat</h1>
+    <p>Tempat aman untuk mencurahkan isi hati secara anonim</p>
+    <button class="toggle-btn" onclick="toggleMode()">🌙 Mode Gelap</button>
+  </header>
+
+  <div class="container">
+    <form id="curhatForm">
+      <label for="kategori">Kategori:</label>
+      <select id="kategori" required>
+        <option value="">Pilih Kategori</option>
+        <option value="Cinta">Cinta</option>
+        <option value="Keluarga">Keluarga</option>
+        <option value="Pekerjaan">Pekerjaan</option>
+      </select>
+
+      <label for="isi">Curhatan:</label>
+      <textarea id="isi" rows="5" placeholder="Tulis curhatan kamu..." required></textarea>
+
+      <button type="submit">Kirim Curhat</button>
+    </form>
+
+    <div id="curhatanList">
+      <!-- Curhatan ditampilkan di sini -->
+    </div>
+  </div>
+
+<script>
+  const form = document.getElementById('curhatForm');
+  const curhatanList = document.getElementById('curhatanList');
+  const toggleBtn = document.querySelector('.toggle-btn');
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const kategori = document.getElementById('kategori').value;
+    const isi = document.getElementById('isi').value.trim();
+
+    if (kategori && isi) {
+      const res = await fetch('/curhat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ kategori, isi })
+      });
+
+      if (res.ok) {
+        loadCurhatan();
+        form.reset();
+      }
+    }
+  });
+
+  async function loadCurhatan() {
+    const res = await fetch('/curhat');
+    const data = await res.json();
+    curhatanList.innerHTML = '';
+    data.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'curhat';
+      div.innerHTML = `<div class="kategori">${item.kategori} • ${item.waktu}</div><p>${item.isi}</p>`;
+      curhatanList.appendChild(div);
+    });
+  }
+
+  function toggleMode() {
+    document.body.classList.toggle('dark');
+    toggleBtn.innerText = document.body.classList.contains('dark') ? '☀️ Mode Terang' : '🌙 Mode Gelap';
+  }
+
+  // Load data saat halaman dibuka
+  window.onload = loadCurhatan;
+</script>
+</body>
+</html>
